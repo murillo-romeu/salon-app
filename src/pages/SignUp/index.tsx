@@ -16,6 +16,7 @@ import { FormHandles } from '@unform/core';
 import getValidationErrors from '../../utils/getValidationErrors';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
+import api from '../../services/api';
 
 import {
   Container,
@@ -51,19 +52,29 @@ const SignUp: React.FC = () => {
       await schema.validate(data, {
         abortEarly: false,
       });
+
+      await api.post('/users', data);
+
+      Alert.alert(
+        'Cadastro realizado com sucesso!',
+        'VOcê já pode acessar a aplicação',
+      );
+
+      navigation.goBack();
     } catch (err) {
-      const errors = getValidationErrors(err);
+      if (err instanceof Yup.ValidationError) {
+        const errors = getValidationErrors(err);
 
-      formRef.current?.setErrors(errors);
+        formRef.current?.setErrors(errors);
 
-      return;
+        return;
+      }
+      Alert.alert(
+        'Erro no cadastro',
+        'Ocorreu um erro ao fazer o cadastro, tente novamente',
+      );
     }
-
-    Alert.alert(
-      'Erro no cadastro',
-      'Ocorreu um erro ao fazer o cadastro, tente novamente',
-    );
-  }, []);
+  }, [navigation]);
 
   return (
     <>
