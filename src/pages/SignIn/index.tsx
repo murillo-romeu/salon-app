@@ -1,12 +1,13 @@
 import React, { useCallback, useRef } from 'react';
 import {
-  Image, KeyboardAvoidingView, Platform, TextInput,
+  Image, KeyboardAvoidingView, Platform, TextInput, Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
-
+import * as Yup from 'yup';
+import getValidationErrors from '../../utils/getValidationErrors';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 
@@ -25,11 +26,44 @@ const SignIn: React.FC = () => {
   const passwordInputRef = useRef<TextInput>(null);
   const navigation = useNavigation();
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  const handleSignIn = useCallback((data: object) => {
-    console.log(data);
-  }, []);
+  interface SignInFormData{
+    email: string;
+    password: string;
+  }
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const handleSignIn = useCallback(async (data: SignInFormData) => {
+    try {
+      formRef.current?.setErrors({});
+      const schema = Yup.object().shape({
+        email: Yup.string().required('E-mail obrigatório').email('E-mail invalido'),
+        password: Yup.string().required('Senha obrigatória'),
+      });
+
+      await schema.validate(data, {
+        abortEarly: false,
+      });
+
+      /* await signIn({
+        email: data.email,
+        password: data.password,
+      }); */
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        const errors = getValidationErrors(err);
+
+        formRef.current?.setErrors(errors);
+        return;
+      }
+
+      Alert.alert('Acesso não autorizado', 'Usuário e / ou senha inválidos');
+      /* addToast({
+          type: 'error',
+          title: 'Acesso não autorizado',
+          description: 'Usuário e / ou senha inválidos',
+        }); */
+    }
+  }, []);
   return (
     <>
       <KeyboardAvoidingView
