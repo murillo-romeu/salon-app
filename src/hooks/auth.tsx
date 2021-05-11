@@ -9,7 +9,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  avatar_url: string;
+  avatar_url_app: string;
 }
 
 interface AuthState {
